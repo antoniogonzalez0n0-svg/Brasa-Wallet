@@ -5,20 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport"
         content="width=device-width, initial-scale=1">
-
   <meta name="theme-color" content="#100b09">
-  <meta name="description"
-        content="Brasa Wallet - monedero DEMO del Festival del Fuego">
-
   <title>Brasa Wallet | Festival del Fuego</title>
-
-  <link rel="stylesheet" href="estilos.css?v=6">
+  <link rel="stylesheet" href="estilos.css?v=8">
 </head>
-
 <body>
+
 <main class="app">
 
-  <!-- ENCABEZADO -->
   <header class="encabezado">
     <div class="marca">
       <span class="llama">🔥</span>
@@ -31,13 +25,14 @@
   </header>
 
   <!-- ACCESO -->
+
   <section id="pantalla-acceso">
     <div class="bienvenida">
       <span class="icono">🔥</span>
       <h2>Tu festival, en tus manos.</h2>
       <p>
-        Recarga, paga y disfruta de una experiencia
-        gastronómica sin efectivo.
+        Recarga, paga y consulta tus movimientos
+        desde tu monedero digital.
       </p>
     </div>
 
@@ -46,24 +41,20 @@
 
       <div id="campo-nombre" hidden>
         <label for="nombre">Nombre completo</label>
-        <input id="nombre"
-               type="text"
+        <input id="nombre" type="text"
                autocomplete="name"
                maxlength="100">
       </div>
 
       <label for="correo">Correo electrónico</label>
-      <input id="correo"
-             type="email"
-             autocomplete="email"
-             required>
+      <input id="correo" type="email"
+             autocomplete="email" required>
 
       <label for="contrasena">Contraseña</label>
       <input id="contrasena"
              type="password"
              autocomplete="current-password"
-             minlength="8"
-             required>
+             minlength="8" required>
 
       <button id="boton-acceso"
               class="boton-principal"
@@ -73,13 +64,13 @@
     </form>
 
     <button id="cambiar-modo"
-            class="enlace"
-            type="button">
+            class="enlace" type="button">
       ¿No tienes cuenta? Regístrate
     </button>
   </section>
 
   <!-- MONEDERO -->
+
   <section id="pantalla-wallet" hidden>
 
     <div class="usuario">
@@ -88,42 +79,37 @@
         <h2 id="nombre-usuario">Visitante</h2>
       </div>
       <button id="cerrar-sesion"
-              class="salir"
-              type="button">
+              class="salir" type="button">
         Salir
       </button>
     </div>
 
-    <!-- SALDO -->
-    <section class="tarjeta-saldo">
+    <div class="tarjeta-saldo">
       <div class="saldo-superior">
         <p>SALDO DISPONIBLE</p>
         <span>✦ BRASA</span>
       </div>
       <h2 id="saldo">Cargando...</h2>
       <span>MXN · Saldo ficticio</span>
-    </section>
+    </div>
 
-    <!-- NAVEGACIÓN -->
     <nav class="acciones">
       <button id="btn-recargar" type="button">
         <span>＋</span>Recargar
       </button>
-
       <button id="btn-tarjetas" type="button">
         <span>▣</span>Mis tarjetas
       </button>
-
       <button id="btn-pagar" type="button">
         <span>▦</span>Pagar QR
       </button>
-
       <button id="btn-historial" type="button">
         <span>◷</span>Historial
       </button>
     </nav>
 
-    <!-- MIS TARJETAS -->
+    <!-- TARJETAS -->
+
     <section id="panel-tarjetas"
              class="panel-seccion" hidden>
 
@@ -141,7 +127,7 @@
 
       <form id="form-tarjeta">
         <label for="tipo-tarjeta">
-          Agregar tarjeta de prueba
+          Nueva tarjeta ficticia
         </label>
 
         <select id="tipo-tarjeta" required>
@@ -154,8 +140,8 @@
         </select>
 
         <p class="aviso-demo">
-          Nunca introduzcas datos bancarios reales.
-          Estas tarjetas son únicamente ficticias.
+          No introduzcas números de tarjetas
+          reales ni códigos de seguridad.
         </p>
 
         <button id="guardar-tarjeta"
@@ -166,28 +152,28 @@
       </form>
     </section>
 
-    <!-- RECARGAS -->
+    <!-- RECARGAR -->
+
     <section id="panel-recarga"
              class="panel-seccion" hidden>
 
       <div class="titulo-seccion">
         <div>
-          <h3>Recargar Brasa Wallet</h3>
-          <p>Agrega saldo ficticio.</p>
+          <h3>Recargar monedero</h3>
+          <p>Recargas ficticias de $100 a $5,000.</p>
         </div>
         <button id="cerrar-recarga"
                 class="salir" type="button">✕</button>
       </div>
 
       <form id="form-recarga">
-
         <label for="tarjeta-recarga">
-          Tarjeta de demostración
+          Tarjeta DEMO
         </label>
         <select id="tarjeta-recarga" required></select>
 
         <label for="monto-recarga">
-          Importe de recarga
+          Cantidad a recargar
         </label>
         <select id="monto-recarga" required></select>
 
@@ -195,12 +181,12 @@
           <h3>Resumen de recarga</h3>
 
           <div class="fila">
-            <span>Saldo a recibir</span>
+            <span>Saldo que recibirás</span>
             <strong id="resumen-monto">$500.00</strong>
           </div>
 
           <div class="fila">
-            <span>Comisión digital</span>
+            <span>Comisión ficticia</span>
             <strong id="resumen-comision">$20.00</strong>
           </div>
 
@@ -213,8 +199,8 @@
         </div>
 
         <p class="aviso-demo">
-          No se realizará ningún cargo bancario.
-          Se abonará únicamente saldo de demostración.
+          Esta operación acredita saldo ficticio.
+          No procesa pagos bancarios reales.
         </p>
 
         <button id="confirmar-recarga"
@@ -225,14 +211,15 @@
       </form>
     </section>
 
-    <!-- PAGO QR -->
+    <!-- PAGAR QR -->
+
     <section id="panel-pago"
              class="panel-seccion" hidden>
 
       <div class="titulo-seccion">
         <div>
           <h3>🔥 Pagar con Brasa Wallet</h3>
-          <p>Selecciona un establecimiento.</p>
+          <p>Pagos ficticios en establecimientos.</p>
         </div>
         <button id="cerrar-pago"
                 class="salir" type="button">✕</button>
@@ -241,17 +228,16 @@
       <div class="qr-explicacion">
         <span>▦</span>
         <p>
-          Escanea el QR del establecimiento
-          con la cámara de tu celular, o
-          selecciona el negocio aquí.
+          Selecciona un negocio o escanea
+          su QR con la cámara de tu celular.
         </p>
       </div>
 
       <form id="form-pago">
+
         <label for="establecimiento">
           Establecimiento
         </label>
-
         <select id="establecimiento" required>
           <option value="">
             Cargando establecimientos...
@@ -261,7 +247,6 @@
         <label for="importe-pago">
           Importe de compra (MXN)
         </label>
-
         <input id="importe-pago"
                type="number"
                min="1"
@@ -271,7 +256,7 @@
                required>
 
         <div class="resumen">
-          <h3>Confirmación de compra</h3>
+          <h3>Resumen de compra</h3>
 
           <div class="fila">
             <span>Establecimiento</span>
@@ -297,42 +282,42 @@
         </div>
 
         <p class="aviso-demo">
-          Pago de demostración. El importe
-          será descontado de tu saldo ficticio.
-          No se cobrará dinero real.
+          Compra simulada. El saldo se
+          descontará únicamente del monedero DEMO.
         </p>
 
         <button id="confirmar-pago"
                 class="boton-principal"
-                type="submit">
+                type="submit"
+                disabled>
           Confirmar pago DEMO
         </button>
       </form>
 
       <div class="qr-negocios">
-        <h3>Códigos QR de establecimientos</h3>
+        <h3>QR de los establecimientos</h3>
         <p>
-          Para la demostración, muestra uno de
-          estos QR en otra pantalla y escanéalo
-          con la cámara del teléfono.
+          Muestra uno de estos códigos en
+          otra pantalla y escanéalo con
+          la cámara de tu teléfono.
         </p>
         <div id="lista-qr" class="lista-qr"></div>
       </div>
     </section>
 
-    <!-- COMPROBANTE COMPARTIDO -->
+    <!-- COMPROBANTE -->
+
     <section id="panel-comprobante"
              class="panel-seccion" hidden>
 
       <div class="comprobante-icono">✓</div>
 
-      <h3 id="ticket-titulo"
-          class="centrado">
+      <h3 id="ticket-titulo" class="centrado">
         ¡Operación registrada!
       </h3>
 
       <p class="centrado secundario">
-        Comprobante digital de demostración
+        Comprobante de demostración
       </p>
 
       <div class="resumen">
@@ -362,7 +347,7 @@
         </div>
 
         <div class="fila">
-          <span>Saldo restante</span>
+          <span>Saldo actualizado</span>
           <strong id="ticket-saldo">—</strong>
         </div>
 
@@ -372,8 +357,7 @@
         </div>
 
         <hr>
-
-        <p class="folio-titulo">FOLIO</p>
+        <p class="folio-titulo">FOLIO DEMO</p>
         <p id="ticket-folio" class="folio">—</p>
       </div>
 
@@ -385,17 +369,17 @@
     </section>
 
     <!-- HISTORIAL -->
+
     <section id="seccion-historial"
              class="movimientos">
       <h3>Últimos movimientos</h3>
       <div id="lista-movimientos">
-        <p>Todavía no tienes movimientos.</p>
+        <p>Cargando movimientos...</p>
       </div>
     </section>
 
   </section>
 
-  <!-- MENSAJES -->
   <p id="mensaje"
      role="status"
      aria-live="polite"></p>
@@ -410,7 +394,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
-<script src="script.js?v=6"></script>
+<script src="script.js?v=8"></script>
 
 </body>
 </html>
