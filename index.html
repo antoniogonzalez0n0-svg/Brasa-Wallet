@@ -8,338 +8,409 @@
 
   <meta name="theme-color" content="#100b09">
   <meta name="description"
-        content="Brasa Wallet, monedero digital DEMO del Festival del Fuego.">
+        content="Brasa Wallet - monedero DEMO del Festival del Fuego">
 
   <title>Brasa Wallet | Festival del Fuego</title>
 
-  <link rel="stylesheet" href="estilos.css?v=5">
+  <link rel="stylesheet" href="estilos.css?v=6">
 </head>
 
 <body>
-  <main class="app">
+<main class="app">
 
-    <header class="encabezado">
-      <div class="marca">
-        <span class="llama">🔥</span>
-        <div>
-          <h1>BRASA WALLET</h1>
-          <p>FESTIVAL DEL FUEGO</p>
-        </div>
+  <!-- ENCABEZADO -->
+  <header class="encabezado">
+    <div class="marca">
+      <span class="llama">🔥</span>
+      <div>
+        <h1>BRASA WALLET</h1>
+        <p>FESTIVAL DEL FUEGO</p>
       </div>
-      <span class="demo">MODO DEMO</span>
-    </header>
+    </div>
+    <span class="demo">MODO DEMO</span>
+  </header>
 
-    <!-- INICIO DE SESIÓN -->
+  <!-- ACCESO -->
+  <section id="pantalla-acceso">
+    <div class="bienvenida">
+      <span class="icono">🔥</span>
+      <h2>Tu festival, en tus manos.</h2>
+      <p>
+        Recarga, paga y disfruta de una experiencia
+        gastronómica sin efectivo.
+      </p>
+    </div>
 
-    <section id="pantalla-acceso">
-      <div class="bienvenida">
-        <span class="icono">🔥</span>
-        <h2>Tu festival, en tus manos.</h2>
-        <p>
-          Consulta tu saldo, administra tus tarjetas
-          de prueba y vive una experiencia sin efectivo.
-        </p>
+    <form id="form-acceso" class="panel">
+      <h3 id="titulo-acceso">Iniciar sesión</h3>
+
+      <div id="campo-nombre" hidden>
+        <label for="nombre">Nombre completo</label>
+        <input id="nombre"
+               type="text"
+               autocomplete="name"
+               maxlength="100">
       </div>
 
-      <form id="form-acceso" class="panel">
-        <h3 id="titulo-acceso">Iniciar sesión</h3>
+      <label for="correo">Correo electrónico</label>
+      <input id="correo"
+             type="email"
+             autocomplete="email"
+             required>
 
-        <div id="campo-nombre" hidden>
-          <label for="nombre">Nombre completo</label>
-          <input id="nombre" type="text"
-                 autocomplete="name" maxlength="100">
-        </div>
+      <label for="contrasena">Contraseña</label>
+      <input id="contrasena"
+             type="password"
+             autocomplete="current-password"
+             minlength="8"
+             required>
 
-        <label for="correo">Correo electrónico</label>
-        <input id="correo" type="email"
-               autocomplete="email" required>
-
-        <label for="contrasena">Contraseña</label>
-        <input id="contrasena" type="password"
-               autocomplete="current-password"
-               minlength="8" required>
-
-        <button id="boton-acceso"
-                class="boton-principal"
-                type="submit">
-          Iniciar sesión
-        </button>
-      </form>
-
-      <button id="cambiar-modo"
-              class="enlace" type="button">
-        ¿No tienes cuenta? Regístrate
+      <button id="boton-acceso"
+              class="boton-principal"
+              type="submit">
+        Iniciar sesión
       </button>
+    </form>
+
+    <button id="cambiar-modo"
+            class="enlace"
+            type="button">
+      ¿No tienes cuenta? Regístrate
+    </button>
+  </section>
+
+  <!-- MONEDERO -->
+  <section id="pantalla-wallet" hidden>
+
+    <div class="usuario">
+      <div>
+        <p>BIENVENIDO A BRASA WALLET</p>
+        <h2 id="nombre-usuario">Visitante</h2>
+      </div>
+      <button id="cerrar-sesion"
+              class="salir"
+              type="button">
+        Salir
+      </button>
+    </div>
+
+    <!-- SALDO -->
+    <section class="tarjeta-saldo">
+      <div class="saldo-superior">
+        <p>SALDO DISPONIBLE</p>
+        <span>✦ BRASA</span>
+      </div>
+      <h2 id="saldo">Cargando...</h2>
+      <span>MXN · Saldo ficticio</span>
     </section>
 
-    <!-- MONEDERO -->
+    <!-- NAVEGACIÓN -->
+    <nav class="acciones">
+      <button id="btn-recargar" type="button">
+        <span>＋</span>Recargar
+      </button>
 
-    <section id="pantalla-wallet" hidden>
+      <button id="btn-tarjetas" type="button">
+        <span>▣</span>Mis tarjetas
+      </button>
 
-      <div class="usuario">
+      <button id="btn-pagar" type="button">
+        <span>▦</span>Pagar QR
+      </button>
+
+      <button id="btn-historial" type="button">
+        <span>◷</span>Historial
+      </button>
+    </nav>
+
+    <!-- MIS TARJETAS -->
+    <section id="panel-tarjetas"
+             class="panel-seccion" hidden>
+
+      <div class="titulo-seccion">
         <div>
-          <p>BIENVENIDO A BRASA WALLET</p>
-          <h2 id="nombre-usuario">Visitante</h2>
+          <h3>Mis tarjetas DEMO</h3>
+          <p>Administra tus tarjetas ficticias.</p>
         </div>
-
-        <button id="cerrar-sesion"
-                class="salir" type="button">
-          Salir
-        </button>
+        <button id="cerrar-tarjetas"
+                class="salir" type="button">✕</button>
       </div>
 
-      <!-- SALDO -->
+      <div id="lista-tarjetas"
+           class="lista-tarjetas"></div>
 
-      <section class="tarjeta-saldo">
-        <div class="saldo-superior">
-          <p>SALDO DISPONIBLE</p>
-          <span>✦ BRASA</span>
-        </div>
+      <form id="form-tarjeta">
+        <label for="tipo-tarjeta">
+          Agregar tarjeta de prueba
+        </label>
 
-        <h2 id="saldo">$0.00</h2>
-        <span>MXN · Saldo ficticio</span>
-      </section>
+        <select id="tipo-tarjeta" required>
+          <option value="brasa_visa">
+            Visa DEMO · 4242
+          </option>
+          <option value="brasa_mastercard">
+            Mastercard DEMO · 5555
+          </option>
+        </select>
 
-      <!-- BOTONES PRINCIPALES -->
-
-      <nav class="acciones"
-           aria-label="Acciones del monedero">
-
-        <button id="btn-recargar" type="button">
-          <span>＋</span>
-          Recargar
-        </button>
-
-        <button id="btn-tarjetas" type="button">
-          <span>▣</span>
-          Mis tarjetas
-        </button>
-
-        <button id="btn-pagar" type="button">
-          <span>▦</span>
-          Pagar
-        </button>
-
-        <button id="btn-historial" type="button">
-          <span>◷</span>
-          Historial
-        </button>
-      </nav>
-
-      <!-- REGISTRO DE TARJETAS DEMO -->
-
-      <section id="panel-tarjetas"
-               class="panel-seccion" hidden>
-
-        <div class="titulo-seccion">
-          <div>
-            <h3>Mis tarjetas DEMO</h3>
-            <p>
-              Registra una tarjeta ficticia
-              para simular tus recargas.
-            </p>
-          </div>
-
-          <button id="cerrar-tarjetas"
-                  class="salir" type="button"
-                  aria-label="Cerrar tarjetas">
-            ✕
-          </button>
-        </div>
-
-        <div id="lista-tarjetas"
-             class="lista-tarjetas"></div>
-
-        <form id="form-tarjeta">
-          <label for="tipo-tarjeta">
-            Tarjeta de demostración
-          </label>
-
-          <select id="tipo-tarjeta" required>
-            <option value="brasa_visa">
-              Visa DEMO · 4242
-            </option>
-            <option value="brasa_mastercard">
-              Mastercard DEMO · 5555
-            </option>
-          </select>
-
-          <p class="aviso-demo">
-            🔒 No introduzcas datos bancarios reales.
-            Estas tarjetas son únicamente
-            representaciones ficticias.
-          </p>
-
-          <button id="guardar-tarjeta"
-                  class="boton-principal"
-                  type="submit">
-            Registrar tarjeta DEMO
-          </button>
-        </form>
-      </section>
-
-      <!-- FORMULARIO DE RECARGA -->
-
-      <section id="panel-recarga"
-               class="panel-seccion" hidden>
-
-        <div class="titulo-seccion">
-          <div>
-            <h3>Recargar Brasa Wallet</h3>
-            <p>
-              Agrega saldo ficticio desde
-              tu tarjeta de demostración.
-            </p>
-          </div>
-
-          <button id="cerrar-recarga"
-                  class="salir" type="button"
-                  aria-label="Cerrar recarga">
-            ✕
-          </button>
-        </div>
-
-        <form id="form-recarga">
-
-          <label for="tarjeta-recarga">
-            Selecciona tu tarjeta DEMO
-          </label>
-
-          <select id="tarjeta-recarga" required>
-          </select>
-
-          <label for="monto-recarga">
-            ¿Cuánto deseas recargar?
-          </label>
-
-          <select id="monto-recarga" required>
-          </select>
-
-          <div class="resumen-recarga">
-            <h3>Resumen de pago DEMO</h3>
-
-            <div class="fila-recarga">
-              <span>Saldo que recibirás</span>
-              <strong id="resumen-monto">
-                $500.00
-              </strong>
-            </div>
-
-            <div class="fila-recarga">
-              <span>Comisión digital</span>
-              <strong id="resumen-comision">
-                $20.00
-              </strong>
-            </div>
-
-            <hr>
-
-            <div class="fila-recarga total">
-              <span>Total simulado</span>
-              <strong id="resumen-total">
-                $520.00
-              </strong>
-            </div>
-          </div>
-
-          <p class="aviso-demo">
-            Esta operación no realiza cargos reales.
-            Al confirmar, se añadirá saldo ficticio
-            a tu monedero.
-          </p>
-
-          <button id="confirmar-recarga"
-                  class="boton-principal"
-                  type="submit">
-            Confirmar pago DEMO
-          </button>
-        </form>
-      </section>
-
-      <!-- COMPROBANTE -->
-
-      <section id="panel-comprobante"
-               class="panel-seccion" hidden>
-
-        <div class="comprobante-icono">✓</div>
-
-        <h3 class="centrado">
-          ¡Recarga registrada!
-        </h3>
-
-        <p class="centrado secundario">
-          Operación completada en modo DEMO.
+        <p class="aviso-demo">
+          Nunca introduzcas datos bancarios reales.
+          Estas tarjetas son únicamente ficticias.
         </p>
 
-        <div class="comprobante-info">
-          <div class="fila-recarga">
-            <span>Saldo abonado</span>
-            <strong id="ticket-monto">—</strong>
+        <button id="guardar-tarjeta"
+                class="boton-principal"
+                type="submit">
+          Registrar tarjeta DEMO
+        </button>
+      </form>
+    </section>
+
+    <!-- RECARGAS -->
+    <section id="panel-recarga"
+             class="panel-seccion" hidden>
+
+      <div class="titulo-seccion">
+        <div>
+          <h3>Recargar Brasa Wallet</h3>
+          <p>Agrega saldo ficticio.</p>
+        </div>
+        <button id="cerrar-recarga"
+                class="salir" type="button">✕</button>
+      </div>
+
+      <form id="form-recarga">
+
+        <label for="tarjeta-recarga">
+          Tarjeta de demostración
+        </label>
+        <select id="tarjeta-recarga" required></select>
+
+        <label for="monto-recarga">
+          Importe de recarga
+        </label>
+        <select id="monto-recarga" required></select>
+
+        <div class="resumen">
+          <h3>Resumen de recarga</h3>
+
+          <div class="fila">
+            <span>Saldo a recibir</span>
+            <strong id="resumen-monto">$500.00</strong>
           </div>
 
-          <div class="fila-recarga">
-            <span>Comisión</span>
-            <strong id="ticket-comision">—</strong>
-          </div>
-
-          <div class="fila-recarga">
-            <span>Total simulado</span>
-            <strong id="ticket-total">—</strong>
-          </div>
-
-          <div class="fila-recarga">
-            <span>Tarjeta DEMO</span>
-            <strong id="ticket-tarjeta">—</strong>
-          </div>
-
-          <div class="fila-recarga">
-            <span>Fecha</span>
-            <strong id="ticket-fecha">—</strong>
+          <div class="fila">
+            <span>Comisión digital</span>
+            <strong id="resumen-comision">$20.00</strong>
           </div>
 
           <hr>
 
-          <p class="folio-titulo">
-            FOLIO DE OPERACIÓN
-          </p>
-
-          <p id="ticket-folio" class="folio">—</p>
+          <div class="fila total">
+            <span>Total simulado</span>
+            <strong id="resumen-total">$520.00</strong>
+          </div>
         </div>
 
-        <button id="cerrar-comprobante"
+        <p class="aviso-demo">
+          No se realizará ningún cargo bancario.
+          Se abonará únicamente saldo de demostración.
+        </p>
+
+        <button id="confirmar-recarga"
                 class="boton-principal"
-                type="button">
-          Volver a mi monedero
+                type="submit">
+          Confirmar recarga DEMO
         </button>
-      </section>
-
-      <!-- HISTORIAL -->
-
-      <section id="seccion-historial"
-               class="movimientos">
-        <h3>Últimos movimientos</h3>
-
-        <div id="lista-movimientos">
-          <p>Todavía no tienes movimientos.</p>
-        </div>
-      </section>
-
+      </form>
     </section>
 
-    <p id="mensaje"
-       role="status"
-       aria-live="polite"></p>
+    <!-- PAGO QR -->
+    <section id="panel-pago"
+             class="panel-seccion" hidden>
 
-    <footer>
-      FESTIVAL DEL FUEGO
-      <br>
-      EL SABOR DE LA BRASA
-      <br>
-      Aplicación demostrativa · Sin dinero real
-    </footer>
-  </main>
+      <div class="titulo-seccion">
+        <div>
+          <h3>🔥 Pagar con Brasa Wallet</h3>
+          <p>Selecciona un establecimiento.</p>
+        </div>
+        <button id="cerrar-pago"
+                class="salir" type="button">✕</button>
+      </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js?v=5"></script>
+      <div class="qr-explicacion">
+        <span>▦</span>
+        <p>
+          Escanea el QR del establecimiento
+          con la cámara de tu celular, o
+          selecciona el negocio aquí.
+        </p>
+      </div>
+
+      <form id="form-pago">
+        <label for="establecimiento">
+          Establecimiento
+        </label>
+
+        <select id="establecimiento" required>
+          <option value="">
+            Cargando establecimientos...
+          </option>
+        </select>
+
+        <label for="importe-pago">
+          Importe de compra (MXN)
+        </label>
+
+        <input id="importe-pago"
+               type="number"
+               min="1"
+               max="5000"
+               step="0.01"
+               placeholder="Ejemplo: 280.00"
+               required>
+
+        <div class="resumen">
+          <h3>Confirmación de compra</h3>
+
+          <div class="fila">
+            <span>Establecimiento</span>
+            <strong id="pago-comercio">—</strong>
+          </div>
+
+          <div class="fila">
+            <span>Compra</span>
+            <strong id="pago-importe">$0.00</strong>
+          </div>
+
+          <div class="fila">
+            <span>Comisión</span>
+            <strong>$0.00</strong>
+          </div>
+
+          <hr>
+
+          <div class="fila total">
+            <span>Total a descontar</span>
+            <strong id="pago-total">$0.00</strong>
+          </div>
+        </div>
+
+        <p class="aviso-demo">
+          Pago de demostración. El importe
+          será descontado de tu saldo ficticio.
+          No se cobrará dinero real.
+        </p>
+
+        <button id="confirmar-pago"
+                class="boton-principal"
+                type="submit">
+          Confirmar pago DEMO
+        </button>
+      </form>
+
+      <div class="qr-negocios">
+        <h3>Códigos QR de establecimientos</h3>
+        <p>
+          Para la demostración, muestra uno de
+          estos QR en otra pantalla y escanéalo
+          con la cámara del teléfono.
+        </p>
+        <div id="lista-qr" class="lista-qr"></div>
+      </div>
+    </section>
+
+    <!-- COMPROBANTE COMPARTIDO -->
+    <section id="panel-comprobante"
+             class="panel-seccion" hidden>
+
+      <div class="comprobante-icono">✓</div>
+
+      <h3 id="ticket-titulo"
+          class="centrado">
+        ¡Operación registrada!
+      </h3>
+
+      <p class="centrado secundario">
+        Comprobante digital de demostración
+      </p>
+
+      <div class="resumen">
+        <div class="fila">
+          <span>Operación</span>
+          <strong id="ticket-tipo">—</strong>
+        </div>
+
+        <div class="fila">
+          <span>Concepto</span>
+          <strong id="ticket-concepto">—</strong>
+        </div>
+
+        <div class="fila">
+          <span>Importe</span>
+          <strong id="ticket-importe">—</strong>
+        </div>
+
+        <div class="fila">
+          <span>Comisión</span>
+          <strong id="ticket-comision">—</strong>
+        </div>
+
+        <div class="fila">
+          <span>Total</span>
+          <strong id="ticket-total">—</strong>
+        </div>
+
+        <div class="fila">
+          <span>Saldo restante</span>
+          <strong id="ticket-saldo">—</strong>
+        </div>
+
+        <div class="fila">
+          <span>Fecha</span>
+          <strong id="ticket-fecha">—</strong>
+        </div>
+
+        <hr>
+
+        <p class="folio-titulo">FOLIO</p>
+        <p id="ticket-folio" class="folio">—</p>
+      </div>
+
+      <button id="cerrar-comprobante"
+              class="boton-principal"
+              type="button">
+        Volver al monedero
+      </button>
+    </section>
+
+    <!-- HISTORIAL -->
+    <section id="seccion-historial"
+             class="movimientos">
+      <h3>Últimos movimientos</h3>
+      <div id="lista-movimientos">
+        <p>Todavía no tienes movimientos.</p>
+      </div>
+    </section>
+
+  </section>
+
+  <!-- MENSAJES -->
+  <p id="mensaje"
+     role="status"
+     aria-live="polite"></p>
+
+  <footer>
+    FESTIVAL DEL FUEGO · EL SABOR DE LA BRASA
+    <br>
+    Aplicación demostrativa · Sin dinero real
+  </footer>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+<script src="script.js?v=6"></script>
+
 </body>
 </html>
