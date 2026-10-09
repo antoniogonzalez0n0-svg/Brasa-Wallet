@@ -1,19 +1,16 @@
 
-/* ==========================================
-   BRASA WALLET
-   Festival del Fuego · El Sabor de la Brasa
-   Tarjetas, recargas e historial DEMO
-========================================== */
+/* =========================================
+   BRASA WALLET · FESTIVAL DEL FUEGO
+   Cuentas, tarjetas, recargas y pagos QR
+   SISTEMA DEMOSTRATIVO · SIN DINERO REAL
+========================================= */
 
-// ==========================================
-// 1. CONEXIÓN CON SUPABASE
-// ==========================================
-
+// 1. SUPABASE
 const SUPABASE_URL =
   "https://spauudjoiuyyepdoeybh.supabase.co";
 
-// Clave pública transcrita anteriormente.
-// Si falla la conexión, cotejar con Supabase.
+// Clave pública transcrita de la captura anterior.
+// Verificar con Supabase si aparece error de conexión.
 const SUPABASE_PUBLIC_KEY =
   "sb_publishable_iC0A7ougnKtYjs036m5J_A_v7SYdWlk";
 
@@ -22,12 +19,8 @@ const db = window.supabase.createClient(
   SUPABASE_PUBLIC_KEY
 );
 
-// ==========================================
-// 2. VARIABLES
-// ==========================================
-
-const $ = (id) => document.getElementById(id);
-
+// 2. CONFIGURACIÓN
+const $ = id => document.getElementById(id);
 const COMISION = 2000;
 
 const TIPOS_TARJETA = {
@@ -37,7 +30,6 @@ const TIPOS_TARJETA = {
     numero: "•••• •••• •••• 4242",
     clase: ""
   },
-
   brasa_mastercard: {
     nombre: "Mastercard DEMO",
     terminacion: "5555",
@@ -48,13 +40,12 @@ const TIPOS_TARJETA = {
 
 let usuarioActual = null;
 let modoRegistro = false;
-let recargaEnProceso = false;
+let operacionEnProceso = false;
 let tarjetas = [];
+let comercios = [];
+let folioPendiente = null;
 
-// ==========================================
 // 3. FUNCIONES GENERALES
-// ==========================================
-
 function dinero(centavos) {
   return new Intl.NumberFormat("es-MX", {
     style: "currency",
@@ -66,28 +57,17 @@ function mensaje(texto) {
   $("mensaje").textContent = texto;
 }
 
+function fechaLocal(fecha = new Date()) {
+  return new Date(fecha).toLocaleString("es-MX", {
+    dateStyle: "short",
+    timeStyle: "short"
+  });
+}
+
 function ocultarPaneles() {
-  $("panel-tarjetas").hidden = true;
-  $("panel-recarga").hidden = true;
-  $("panel-comprobante").hidden = true;
-}
-
-function mostrarAcceso() {
-  usuarioActual = null;
-  tarjetas = [];
-
-  ocultarPaneles();
-
-  $("pantalla-acceso").hidden = false;
-  $("pantalla-wallet").hidden = true;
-
-  $("saldo").textContent = "$0.00";
-  $("lista-movimientos").replaceChildren();
-}
-
-function mostrarWallet() {
-  $("pantalla-acceso").hidden = true;
-  $("pantalla-wallet").hidden = false;
+  ["panel-tarjetas", "panel-recarga",
+   "panel-pago", "panel-comprobante"]
+    .forEach(id => $(id).hidden = true);
 }
 
 function irA(id) {
@@ -97,17 +77,30 @@ function irA(id) {
   });
 }
 
-function fechaLocal(valor) {
-  return new Date(valor).toLocaleString("es-MX", {
-    dateStyle: "short",
-    timeStyle: "short"
-  });
+function mostrarAcceso() {
+  usuarioActual = null;
+  tarjetas = [];
+  comercios = [];
+  ocultarPaneles();
+  $("pantalla-acceso").hidden = false;
+  $("pantalla-wallet").hidden = true;
+  $("saldo").textContent = "Cargando...";
 }
 
-// ==========================================
-// 4. REGISTRO E INICIO DE SESIÓN
-// ==========================================
+function mostrarWallet() {
+  $("pantalla-acceso").hidden = true;
+  $("pantalla-wallet").hidden = false;
+}
 
+function bloquearOperaciones(bloquear) {
+  operacionEnProceso = bloquear;
+  $("confirmar-recarga").disabled = bloquear;
+  $("confirmar-pago").disabled = bloquear;
+  $("guardar-tarjeta").disabled = bloquear;
+  $("cerrar-sesion").disabled = bloquear;
+}
+
+// 4. REGISTRO Y LOGIN
 function cambiarModo() {
   modoRegistro = !modoRegistro;
 
@@ -115,34 +108,24 @@ function cambiarModo() {
   $("nombre").required = modoRegistro;
 
   $("titulo-acceso").textContent =
-    modoRegistro
-      ? "Crear cuenta"
-      : "Iniciar sesión";
+    modoRegistro ? "Crear cuenta" : "Iniciar sesión";
 
   $("boton-acceso").textContent =
-    modoRegistro
-      ? "Registrarme"
-      : "Iniciar sesión";
+    modoRegistro ? "Registrarme" : "Iniciar sesión";
 
-  $("cambiar-modo").textContent =
-    modoRegistro
-      ? "¿Ya tienes cuenta? Inicia sesión"
-      : "¿No tienes cuenta? Regístrate";
+  $("cambiar-modo").textContent = modoRegistro
+    ? "¿Ya tienes cuenta? Inicia sesión"
+    : "¿No tienes cuenta? Regístrate";
 
-  $("contrasena").autocomplete =
-    modoRegistro
-      ? "new-password"
-      : "current-password";
+  $("contrasena").autocomplete = modoRegistro
+    ? "new-password" : "current-password";
 
   mensaje("");
 }
 
 async function procesarAcceso(evento) {
   evento.preventDefault();
-
-  const boton = $("boton-acceso");
-  boton.disabled = true;
-
+  $("boton-acceso").disabled = true;
   mensaje("Procesando solicitud...");
 
   try {
@@ -153,65 +136,48 @@ async function procesarAcceso(evento) {
       const nombre = $("nombre").value.trim();
 
       if (!nombre) {
-        throw new Error(
-          "Escribe tu nombre completo."
-        );
+        throw new Error("Escribe tu nombre.");
       }
 
-      const { data, error } =
-        await db.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              full_name: nombre
-            },
-            emailRedirectTo:
-              window.location.origin +
-              window.location.pathname
-          }
-        });
+      const { data, error } = await db.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: nombre },
+          emailRedirectTo:
+            window.location.origin +
+            window.location.pathname
+        }
+      });
 
       if (error) throw error;
 
       if (!data.session) {
         mensaje(
-          "Revisa tu correo y confirma tu cuenta. " +
-          "Después inicia sesión."
+          "Confirma tu correo y luego inicia sesión."
         );
       } else {
         await cargarUsuario();
       }
-
     } else {
       const { error } =
         await db.auth.signInWithPassword({
-          email,
-          password
+          email, password
         });
 
       if (error) throw error;
-
       await cargarUsuario();
     }
-
   } catch (error) {
-    mensaje(
-      "No se pudo completar: " +
-      error.message
-    );
+    mensaje("Error de acceso: " + error.message);
   } finally {
-    boton.disabled = false;
+    $("boton-acceso").disabled = false;
   }
 }
 
-// ==========================================
-// 5. USUARIO Y SALDO
-// ==========================================
-
+// 5. CARGAR CUENTA
 async function cargarUsuario() {
-  const { data, error } =
-    await db.auth.getUser();
+  const { data, error } = await db.auth.getUser();
 
   if (error || !data.user) {
     mostrarAcceso();
@@ -221,11 +187,11 @@ async function cargarUsuario() {
   usuarioActual = data.user;
   mostrarWallet();
 
-  const { data: perfil } =
-    await db.from("profiles")
-      .select("full_name")
-      .eq("id", usuarioActual.id)
-      .maybeSingle();
+  const { data: perfil } = await db
+    .from("profiles")
+    .select("full_name")
+    .eq("id", usuarioActual.id)
+    .maybeSingle();
 
   $("nombre-usuario").textContent =
     perfil?.full_name ||
@@ -234,72 +200,69 @@ async function cargarUsuario() {
 
   await cargarSaldo();
   await cargarTarjetas();
+  await cargarComercios();
+
+  // Si se abrió Brasa Wallet mediante QR,
+  // seleccionar automáticamente el comercio.
+  const slugQR = new URLSearchParams(
+    window.location.search
+  ).get("merchant");
+
+  if (slugQR && comercios.some(c => c.slug === slugQR)) {
+    abrirPago(slugQR);
+  }
 }
 
+// 6. CONSULTAR SALDO
 async function cargarSaldo() {
   if (!usuarioActual) return;
 
-  const { data: wallet, error } =
-    await db.from("wallets")
-      .select("id, balance_cents")
-      .eq("user_id", usuarioActual.id)
-      .maybeSingle();
+  const { data: wallet, error } = await db
+    .from("wallets")
+    .select("id, balance_cents")
+    .eq("user_id", usuarioActual.id)
+    .maybeSingle();
 
   if (error) {
-    mensaje(
-      "Error al cargar saldo: " +
-      error.message
-    );
+    mensaje("Error al cargar saldo: " + error.message);
+    $("saldo").textContent = "No disponible";
     return;
   }
 
   if (!wallet) {
     $("saldo").textContent = "No disponible";
-    mensaje("No se encontró tu monedero.");
+    mensaje("No encontramos tu monedero.");
     return;
   }
 
-  $("saldo").textContent =
-    dinero(wallet.balance_cents);
-
+  $("saldo").textContent = dinero(wallet.balance_cents);
   await cargarHistorial(wallet.id);
 }
 
-// ==========================================
-// 6. HISTORIAL
-// ==========================================
-
+// 7. HISTORIAL
 async function cargarHistorial(walletId) {
-  const { data, error } =
-    await db.from("wallet_transactions")
-      .select(
-        "id, type, amount_cents, " +
-        "description, created_at, reference"
-      )
-      .eq("wallet_id", walletId)
-      .order("created_at", {
-        ascending: false
-      })
-      .limit(40);
+  const { data, error } = await db
+    .from("wallet_transactions")
+    .select(
+      "id, type, amount_cents, description, " +
+      "merchant_name, created_at, reference"
+    )
+    .eq("wallet_id", walletId)
+    .order("created_at", { ascending: false })
+    .limit(40);
 
   const lista = $("lista-movimientos");
   lista.replaceChildren();
 
   if (error) {
-    mensaje(
-      "Error al cargar historial: " +
-      error.message
-    );
+    mensaje("Error de historial: " + error.message);
     return;
   }
 
-  if (!data || data.length === 0) {
-    const aviso = document.createElement("p");
-
-    aviso.textContent =
-      "Todavía no tienes movimientos.";
-
-    lista.appendChild(aviso);
+  if (!data?.length) {
+    const p = document.createElement("p");
+    p.textContent = "Todavía no tienes movimientos.";
+    lista.appendChild(p);
     return;
   }
 
@@ -308,48 +271,40 @@ async function cargarHistorial(walletId) {
     fila.className = "movimiento-item";
 
     const detalle = document.createElement("p");
+    const comercio = mov.merchant_name
+      ? " · " + mov.merchant_name : "";
+
     detalle.textContent =
-      mov.description +
-      " · " +
-      fechaLocal(mov.created_at);
+      mov.description + comercio +
+      " · " + fechaLocal(mov.created_at);
 
     const importe = document.createElement("strong");
     const valor = Number(mov.amount_cents);
 
     importe.textContent =
-      (valor > 0 ? "+" : "") +
-      dinero(valor);
+      (valor > 0 ? "+" : "") + dinero(valor);
 
     fila.append(detalle, importe);
     lista.appendChild(fila);
   }
 }
 
-// ==========================================
-// 7. CONSULTAR TARJETAS DEMO
-// ==========================================
-
+// 8. TARJETAS DE PRUEBA
 async function cargarTarjetas() {
   if (!usuarioActual) return;
 
-  const { data, error } =
-    await db.from("demo_cards")
-      .select("id, card_type, created_at")
-      .eq("user_id", usuarioActual.id)
-      .order("created_at", {
-        ascending: true
-      });
+  const { data, error } = await db
+    .from("demo_cards")
+    .select("id, card_type, created_at")
+    .eq("user_id", usuarioActual.id)
+    .order("created_at", { ascending: true });
 
   if (error) {
-    mensaje(
-      "Error al cargar tarjetas: " +
-      error.message
-    );
+    mensaje("Error de tarjetas: " + error.message);
     return;
   }
 
   tarjetas = data || [];
-
   dibujarTarjetas();
   actualizarSelectorTarjetas();
 }
@@ -358,14 +313,11 @@ function dibujarTarjetas() {
   const lista = $("lista-tarjetas");
   lista.replaceChildren();
 
-  if (tarjetas.length === 0) {
-    const aviso = document.createElement("p");
-    aviso.className = "secundario";
-
-    aviso.textContent =
-      "Todavía no tienes tarjetas DEMO.";
-
-    lista.appendChild(aviso);
+  if (!tarjetas.length) {
+    const p = document.createElement("p");
+    p.className = "secundario";
+    p.textContent = "Todavía no tienes tarjetas DEMO.";
+    lista.appendChild(p);
     return;
   }
 
@@ -373,9 +325,8 @@ function dibujarTarjetas() {
     const tipo = TIPOS_TARJETA[tarjeta.card_type];
     if (!tipo) continue;
 
-    const visual = document.createElement("div");
-    visual.className =
-      "tarjeta-demo " + tipo.clase;
+    const caja = document.createElement("div");
+    caja.className = "tarjeta-demo " + tipo.clase;
 
     const superior = document.createElement("div");
     superior.className = "tarjeta-demo-superior";
@@ -398,32 +349,24 @@ function dibujarTarjetas() {
     const pie = document.createElement("div");
     pie.className = "tarjeta-demo-pie";
 
-    const titular = document.createElement("span");
-    titular.textContent = "TARJETA FICTICIA";
+    const t1 = document.createElement("span");
+    t1.textContent = "TARJETA FICTICIA";
 
-    const vigencia = document.createElement("span");
-    vigencia.textContent = "SIN VENCIMIENTO";
+    const t2 = document.createElement("span");
+    t2.textContent = "SIN VENCIMIENTO";
 
-    pie.append(titular, vigencia);
+    pie.append(t1, t2);
 
     const eliminar = document.createElement("button");
     eliminar.type = "button";
     eliminar.className = "eliminar-tarjeta";
     eliminar.textContent = "Eliminar tarjeta DEMO";
-
-    eliminar.addEventListener("click", () => {
-      eliminarTarjeta(tarjeta.id);
-    });
-
-    visual.append(
-      superior,
-      chip,
-      numero,
-      pie,
-      eliminar
+    eliminar.addEventListener("click", () =>
+      eliminarTarjeta(tarjeta.id)
     );
 
-    lista.appendChild(visual);
+    caja.append(superior, chip, numero, pie, eliminar);
+    lista.appendChild(caja);
   }
 }
 
@@ -431,13 +374,10 @@ function actualizarSelectorTarjetas() {
   const select = $("tarjeta-recarga");
   select.replaceChildren();
 
-  if (tarjetas.length === 0) {
+  if (!tarjetas.length) {
     const opcion = document.createElement("option");
-
     opcion.value = "";
-    opcion.textContent =
-      "Primero registra una tarjeta DEMO";
-
+    opcion.textContent = "Registra una tarjeta primero";
     select.appendChild(opcion);
     return;
   }
@@ -447,88 +387,60 @@ function actualizarSelectorTarjetas() {
     if (!tipo) continue;
 
     const opcion = document.createElement("option");
-
     opcion.value = tarjeta.id;
-
     opcion.textContent =
-      tipo.nombre +
-      " · •••• " +
-      tipo.terminacion;
+      tipo.nombre + " · •••• " + tipo.terminacion;
 
     select.appendChild(opcion);
   }
 }
 
-// ==========================================
-// 8. REGISTRAR TARJETA DEMO
-// ==========================================
-
 async function guardarTarjeta(evento) {
   evento.preventDefault();
-
-  if (!usuarioActual) return;
+  if (!usuarioActual || operacionEnProceso) return;
 
   const tipo = $("tipo-tarjeta").value;
+  if (!TIPOS_TARJETA[tipo]) return;
 
-  if (!TIPOS_TARJETA[tipo]) {
-    mensaje("Selecciona una tarjeta válida.");
-    return;
-  }
-
-  const boton = $("guardar-tarjeta");
-  boton.disabled = true;
+  $("guardar-tarjeta").disabled = true;
 
   try {
-    const { error } =
-      await db.from("demo_cards")
-        .insert({
-          user_id: usuarioActual.id,
-          card_type: tipo
-        });
+    const { error } = await db.from("demo_cards")
+      .insert({
+        user_id: usuarioActual.id,
+        card_type: tipo
+      });
 
-    if (error) {
-      if (error.code === "23505") {
-        throw new Error(
-          "Esa tarjeta DEMO ya está registrada."
-        );
-      }
-
-      throw error;
-    }
+    if (error) throw error;
 
     await cargarTarjetas();
-
     mensaje("Tarjeta DEMO registrada.");
-
   } catch (error) {
-    mensaje(error.message);
-
+    mensaje(
+      error.code === "23505"
+        ? "Esa tarjeta ya está registrada."
+        : "Error: " + error.message
+    );
   } finally {
-    boton.disabled = false;
+    $("guardar-tarjeta").disabled = false;
   }
 }
 
 async function eliminarTarjeta(id) {
-  if (!usuarioActual) return;
+  if (operacionEnProceso) return;
 
-  const confirmar = window.confirm(
-    "¿Eliminar esta tarjeta ficticia?\n\n" +
-    "No se borrará tu saldo ni tu historial."
-  );
+  if (!window.confirm(
+    "¿Eliminar esta tarjeta ficticia? " +
+    "No se borrará tu saldo."
+  )) return;
 
-  if (!confirmar) return;
-
-  const { error } =
-    await db.from("demo_cards")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", usuarioActual.id);
+  const { error } = await db.from("demo_cards")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", usuarioActual.id);
 
   if (error) {
-    mensaje(
-      "No se pudo eliminar: " +
-      error.message
-    );
+    mensaje(error.message);
     return;
   }
 
@@ -536,260 +448,401 @@ async function eliminarTarjeta(id) {
   mensaje("Tarjeta DEMO eliminada.");
 }
 
-// ==========================================
-// 9. ABRIR Y CERRAR PANELES
-// ==========================================
-
-function ocultarPaneles() {
-  $("panel-tarjetas").hidden = true;
-  $("panel-recarga").hidden = true;
-  $("panel-comprobante").hidden = true;
-}
-
-function irA(id) {
-  $(id).scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
-}
-
 function abrirTarjetas() {
   ocultarPaneles();
-
   $("panel-tarjetas").hidden = false;
-
-  cargarTarjetas();
   irA("panel-tarjetas");
 }
 
-function abrirRecarga() {
-  if (tarjetas.length === 0) {
-    abrirTarjetas();
-
-    mensaje(
-      "Primero registra una tarjeta ficticia " +
-      "para poder recargar."
-    );
-
-    return;
-  }
-
-  ocultarPaneles();
-  actualizarResumen();
-
-  $("panel-recarga").hidden = false;
-
-  mensaje("");
-  irA("panel-recarga");
-}
-
-// ==========================================
-// 10. MONTOS Y COMISIÓN
-// ==========================================
-
+// 9. RECARGAS
 function llenarMontos() {
   const select = $("monto-recarga");
   select.replaceChildren();
 
   for (let monto = 100; monto <= 5000; monto += 100) {
-    const opcion = document.createElement("option");
-
-    opcion.value = String(monto);
-    opcion.textContent = dinero(monto * 100);
-
-    if (monto === 500) {
-      opcion.selected = true;
-    }
-
-    select.appendChild(opcion);
+    const op = document.createElement("option");
+    op.value = monto;
+    op.textContent = dinero(monto * 100);
+    if (monto === 500) op.selected = true;
+    select.appendChild(op);
   }
 }
 
-function montoValido(monto) {
-  return (
-    Number.isInteger(monto) &&
-    monto >= 100 &&
-    monto <= 5000 &&
-    monto % 100 === 0
-  );
+function actualizarResumenRecarga() {
+  const monto = Number($("monto-recarga").value);
+  const centavos = monto * 100;
+
+  $("resumen-monto").textContent = dinero(centavos);
+  $("resumen-comision").textContent = dinero(COMISION);
+  $("resumen-total").textContent =
+    dinero(centavos + COMISION);
 }
 
-function actualizarResumen() {
-  const monto = Number($("monto-recarga").value);
-
-  if (!montoValido(monto)) {
-    $("confirmar-recarga").disabled = true;
+function abrirRecarga() {
+  if (!tarjetas.length) {
+    abrirTarjetas();
+    mensaje("Primero registra una tarjeta ficticia.");
     return;
   }
 
-  const centavos = monto * 100;
-
-  $("resumen-monto").textContent =
-    dinero(centavos);
-
-  $("resumen-comision").textContent =
-    dinero(COMISION);
-
-  $("resumen-total").textContent =
-    dinero(centavos + COMISION);
-
-  $("confirmar-recarga").disabled =
-    recargaEnProceso;
+  ocultarPaneles();
+  actualizarResumenRecarga();
+  $("panel-recarga").hidden = false;
+  mensaje("");
+  irA("panel-recarga");
 }
-
-// ==========================================
-// 11. CONFIRMAR RECARGA DEMO
-// ==========================================
 
 async function confirmarRecarga(evento) {
   evento.preventDefault();
-
-  if (!usuarioActual || recargaEnProceso) return;
+  if (!usuarioActual || operacionEnProceso) return;
 
   const monto = Number($("monto-recarga").value);
-
-  if (!montoValido(monto)) {
-    mensaje("Selecciona un importe válido.");
-    return;
-  }
-
-  const tarjetaId = $("tarjeta-recarga").value;
-
   const tarjeta = tarjetas.find(
-    (t) => t.id === tarjetaId
+    t => t.id === $("tarjeta-recarga").value
   );
 
-  if (!tarjeta) {
-    mensaje("Selecciona una tarjeta registrada.");
+  if (!Number.isInteger(monto) ||
+      monto < 100 || monto > 5000 ||
+      monto % 100 !== 0 || !tarjeta) {
+    mensaje("Importe o tarjeta DEMO inválidos.");
     return;
   }
 
-  const info = TIPOS_TARJETA[tarjeta.card_type];
-
-  if (!info) {
-    mensaje("Tarjeta DEMO no válida.");
-    return;
-  }
+  const tipo = TIPOS_TARJETA[tarjeta.card_type];
+  if (!tipo) return;
 
   const centavos = monto * 100;
-  const total = centavos + COMISION;
 
-  const confirmado = window.confirm(
-    "BRASA WALLET · PAGO DEMO\n\n" +
-    "Tarjeta: " + info.nombre +
-    " · " + info.terminacion + "\n\n" +
+  const confirmar = window.confirm(
+    "RECARGA BRASA WALLET · DEMO\n\n" +
+    "Tarjeta: " + tipo.nombre +
+    " •••• " + tipo.terminacion + "\n" +
     "Recarga: " + dinero(centavos) + "\n" +
     "Comisión: " + dinero(COMISION) + "\n" +
-    "Total: " + dinero(total) + "\n\n" +
-    "NO se cobrará dinero real.\n\n" +
-    "¿Confirmar recarga ficticia?"
+    "TOTAL SIMULADO: " +
+    dinero(centavos + COMISION) + "\n\n" +
+    "No se cobrará dinero real.\n\n" +
+    "¿Confirmar?"
   );
 
-  if (!confirmado) return;
+  if (!confirmar) return;
 
-  recargaEnProceso = true;
+  bloquearOperaciones(true);
+  mensaje("Procesando recarga DEMO...");
 
-  const boton = $("confirmar-recarga");
-  boton.disabled = true;
-  boton.textContent = "Procesando pago DEMO...";
-
-  mensaje("Registrando recarga ficticia...");
+  let recargaConfirmada = false;
 
   try {
-    // Abonar mediante la función SQL
-    // que ya configuramos en Supabase.
-    const { data, error } =
-      await db.rpc("brasa_demo_topup", {
-        p_amount_cents: centavos
-      });
+    const { data, error } = await db.rpc(
+      "brasa_demo_topup",
+      { p_amount_cents: centavos }
+    );
 
     if (error) throw error;
-
     if (!data?.success) {
-      throw new Error(
-        "Supabase no confirmó la recarga."
-      );
+      throw new Error("No se recibió confirmación.");
     }
+
+    recargaConfirmada = true;
 
     $("saldo").textContent =
       dinero(data.balance_cents);
 
-    // Preparar el comprobante.
-    $("ticket-monto").textContent =
-      dinero(data.recharged_cents);
-
-    $("ticket-comision").textContent =
-      dinero(data.fee_cents);
-
-    $("ticket-total").textContent =
-      dinero(data.simulated_total_cents);
-
-    $("ticket-tarjeta").textContent =
-      info.nombre + " · " + info.terminacion;
-
-    $("ticket-fecha").textContent =
-      fechaLocal(new Date());
-
-    $("ticket-folio").textContent =
-      data.reference;
-
-    ocultarPaneles();
-
-    $("panel-comprobante").hidden = false;
-    irA("panel-comprobante");
-
-    mensaje(
-      "Recarga DEMO registrada correctamente."
-    );
-
-    // Consultar movimientos nuevos.
-    // No repetir la recarga si falla la lectura.
-    await cargarSaldo();
+    mostrarTicket({
+      titulo: "¡Recarga registrada!",
+      tipo: "Recarga DEMO",
+      concepto: tipo.nombre + " •••• " + tipo.terminacion,
+      importe: data.recharged_cents,
+      comision: data.fee_cents,
+      total: data.simulated_total_cents,
+      saldo: data.balance_cents,
+      folio: data.reference
+    });
 
   } catch (error) {
     mensaje(
-      "No se pudo completar o verificar " +
-      "la recarga: " + error.message +
-      ". Revisa tu saldo e historial " +
-      "antes de volver a intentarlo."
+      "No se pudo completar o verificar la recarga: " +
+      error.message +
+      ". Revisa tu saldo antes de reintentar."
     );
-
   } finally {
-    recargaEnProceso = false;
+    bloquearOperaciones(false);
+  }
 
-    boton.disabled = false;
-    boton.textContent = "Confirmar pago DEMO";
+  if (recargaConfirmada) {
+    await cargarSaldo();
   }
 }
 
-// ==========================================
-// 12. CERRAR SESIÓN
-// ==========================================
-
-async function cerrarSesion() {
-  if (recargaEnProceso) return;
-
-  const { error } = await db.auth.signOut();
+// 10. COMERCIOS Y QR
+async function cargarComercios() {
+  const { data, error } = await db
+    .from("brasa_merchants")
+    .select("slug, name, active")
+    .eq("active", true)
+    .order("name");
 
   if (error) {
     mensaje(
-      "Error al cerrar sesión: " +
+      "Error al cargar establecimientos: " +
       error.message
     );
     return;
   }
 
-  mostrarAcceso();
+  comercios = data || [];
 
-  $("form-acceso").reset();
+  const select = $("establecimiento");
+  select.replaceChildren();
 
-  mensaje("Sesión cerrada correctamente.");
+  const inicial = document.createElement("option");
+  inicial.value = "";
+  inicial.textContent = "Selecciona un establecimiento";
+  select.appendChild(inicial);
+
+  for (const comercio of comercios) {
+    const op = document.createElement("option");
+    op.value = comercio.slug;
+    op.textContent = comercio.name;
+    select.appendChild(op);
+  }
+
+  dibujarQR();
 }
 
-// ==========================================
-// 13. EVENTOS
-// ==========================================
+function urlComercio(slug) {
+  const url = new URL(
+    window.location.origin + window.location.pathname
+  );
+  url.searchParams.set("merchant", slug);
+  return url.toString();
+}
 
+function dibujarQR() {
+  const lista = $("lista-qr");
+  lista.replaceChildren();
+
+  for (const comercio of comercios) {
+    const caja = document.createElement("div");
+    caja.className = "qr-negocio";
+
+    const titulo = document.createElement("h4");
+    titulo.textContent = comercio.name;
+
+    const contenedor = document.createElement("div");
+    contenedor.className = "qr-imagen";
+
+    const canvas = document.createElement("canvas");
+    contenedor.appendChild(canvas);
+
+    const enlace = document.createElement("a");
+    enlace.href = urlComercio(comercio.slug);
+    enlace.textContent = "Abrir enlace del establecimiento";
+
+    caja.append(titulo, contenedor, enlace);
+    lista.appendChild(caja);
+
+    if (window.QRCode?.toCanvas) {
+      window.QRCode.toCanvas(
+        canvas,
+        urlComercio(comercio.slug),
+        {
+          width: 185,
+          margin: 3,
+          errorCorrectionLevel: "M",
+          color: {
+            dark: "#21130d",
+            light: "#ffffff"
+          }
+        },
+        error => {
+          if (error) {
+            contenedor.textContent =
+              "No se pudo generar el QR.";
+          }
+        }
+      );
+    } else {
+      contenedor.textContent =
+        "QR no disponible. Utiliza el enlace.";
+    }
+  }
+}
+
+function abrirPago(slug = "") {
+  ocultarPaneles();
+  $("panel-pago").hidden = false;
+
+  if (slug && comercios.some(c => c.slug === slug)) {
+    $("establecimiento").value = slug;
+  }
+
+  actualizarResumenPago();
+  irA("panel-pago");
+}
+
+function actualizarResumenPago() {
+  const slug = $("establecimiento").value;
+  const comercio = comercios.find(c => c.slug === slug);
+
+  // Validación de centavos para no generar
+  // importes con decimales imprecisos.
+  const texto = $("importe-pago").value.trim();
+  const monto = Number(texto);
+  const centavos = Math.round(monto * 100);
+
+  const valido =
+    texto !== "" &&
+    Number.isFinite(monto) &&
+    /^\d+(\.\d{1,2})?$/.test(texto) &&
+    centavos >= 100 &&
+    centavos <= 500000;
+
+  $("pago-comercio").textContent =
+    comercio?.name || "—";
+
+  $("pago-importe").textContent =
+    valido ? dinero(centavos) : "$0.00";
+
+  $("pago-total").textContent =
+    valido ? dinero(centavos) : "$0.00";
+
+  $("confirmar-pago").disabled =
+    !valido || !comercio || operacionEnProceso;
+}
+
+// 11. PAGOS
+async function confirmarPago(evento) {
+  evento.preventDefault();
+
+  if (!usuarioActual || operacionEnProceso) return;
+
+  const slug = $("establecimiento").value;
+  const comercio = comercios.find(c => c.slug === slug);
+
+  const texto = $("importe-pago").value.trim();
+  const monto = Number(texto);
+  const centavos = Math.round(monto * 100);
+
+  if (!comercio ||
+      !/^\d+(\.\d{1,2})?$/.test(texto) ||
+      !Number.isFinite(monto) ||
+      centavos < 100 ||
+      centavos > 500000) {
+    mensaje("Selecciona un negocio y un importe válido.");
+    return;
+  }
+
+  const confirmar = window.confirm(
+    "PAGO BRASA WALLET · DEMO\n\n" +
+    "Establecimiento: " + comercio.name + "\n" +
+    "Compra: " + dinero(centavos) + "\n" +
+    "Comisión: $0.00\n\n" +
+    "TOTAL A DESCONTAR: " + dinero(centavos) +
+    "\n\nEsta compra es ficticia.\n\n" +
+    "¿Confirmar pago?"
+  );
+
+  if (!confirmar) return;
+
+  bloquearOperaciones(true);
+  mensaje("Procesando pago DEMO...");
+
+  let pagoConfirmado = false;
+
+  try {
+    const { data, error } = await db.rpc(
+      "brasa_demo_pay",
+      {
+        p_merchant_slug: slug,
+        p_amount_cents: centavos
+      }
+    );
+
+    if (error) throw error;
+
+    if (!data?.success) {
+      throw new Error(
+        "El servidor no confirmó el pago."
+      );
+    }
+
+    pagoConfirmado = true;
+
+    $("saldo").textContent =
+      dinero(data.balance_cents);
+
+    mostrarTicket({
+      titulo: "¡Pago realizado!",
+      tipo: "Compra DEMO",
+      concepto: data.merchant_name,
+      importe: -data.paid_cents,
+      comision: 0,
+      total: data.paid_cents,
+      saldo: data.balance_cents,
+      folio: data.reference
+    });
+
+    $("importe-pago").value = "";
+
+    // Quitar el parámetro del QR después del pago
+    // para no reabrirlo al actualizar la página.
+    const url = new URL(window.location.href);
+    url.searchParams.delete("merchant");
+    window.history.replaceState({}, "", url);
+
+  } catch (error) {
+    mensaje(
+      "Pago no completado o no verificado: " +
+      error.message +
+      ". Revisa el historial antes de reintentar."
+    );
+  } finally {
+    bloquearOperaciones(false);
+    actualizarResumenPago();
+  }
+
+  if (pagoConfirmado) {
+    await cargarSaldo();
+  }
+}
+
+// 12. COMPROBANTES
+function mostrarTicket(info) {
+  $("ticket-titulo").textContent = info.titulo;
+  $("ticket-tipo").textContent = info.tipo;
+  $("ticket-concepto").textContent = info.concepto;
+  $("ticket-importe").textContent = dinero(info.importe);
+  $("ticket-comision").textContent = dinero(info.comision);
+  $("ticket-total").textContent = dinero(info.total);
+  $("ticket-saldo").textContent = dinero(info.saldo);
+  $("ticket-fecha").textContent = fechaLocal();
+  $("ticket-folio").textContent = info.folio;
+
+  ocultarPaneles();
+  $("panel-comprobante").hidden = false;
+  irA("panel-comprobante");
+
+  mensaje("Operación DEMO registrada correctamente.");
+}
+
+// 13. CERRAR SESIÓN
+async function cerrarSesion() {
+  if (operacionEnProceso) return;
+
+  const { error } = await db.auth.signOut();
+
+  if (error) {
+    mensaje(error.message);
+    return;
+  }
+
+  mostrarAcceso();
+  $("form-acceso").reset();
+  mensaje("Sesión cerrada.");
+}
+
+// 14. EVENTOS
 $("form-acceso").addEventListener(
   "submit", procesarAcceso
 );
@@ -822,18 +875,42 @@ $("btn-recargar").addEventListener(
 
 $("cerrar-recarga").addEventListener(
   "click", () => {
-    if (!recargaEnProceso) {
+    if (!operacionEnProceso) {
       $("panel-recarga").hidden = true;
     }
   }
 );
 
 $("monto-recarga").addEventListener(
-  "change", actualizarResumen
+  "change", actualizarResumenRecarga
 );
 
 $("form-recarga").addEventListener(
   "submit", confirmarRecarga
+);
+
+$("btn-pagar").addEventListener(
+  "click", () => abrirPago()
+);
+
+$("cerrar-pago").addEventListener(
+  "click", () => {
+    if (!operacionEnProceso) {
+      $("panel-pago").hidden = true;
+    }
+  }
+);
+
+$("establecimiento").addEventListener(
+  "change", actualizarResumenPago
+);
+
+$("importe-pago").addEventListener(
+  "input", actualizarResumenPago
+);
+
+$("form-pago").addEventListener(
+  "submit", confirmarPago
 );
 
 $("cerrar-comprobante").addEventListener(
@@ -850,23 +927,11 @@ $("btn-historial").addEventListener(
   }
 );
 
-$("btn-pagar").addEventListener(
-  "click", () => {
-    mensaje(
-      "Los pagos por QR estarán disponibles " +
-      "en nuestra siguiente fase."
-    );
-  }
-);
-
-// ==========================================
-// 14. INICIAR BRASA WALLET
-// ==========================================
-
+// 15. INICIAR APLICACIÓN
 async function iniciarApp() {
   llenarMontos();
-  actualizarResumen();
-
+  actualizarResumenRecarga();
+  actualizarResumenPago();
   await cargarUsuario();
 }
 
