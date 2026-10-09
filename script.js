@@ -7,8 +7,9 @@
 
 // PASO SIGUIENTE: sustituiremos estos valores
 // con los datos públicos de nuestro Supabase.
-const SUPABASE_URL = "PEGAR_URL_DEL_PROYECTO";
-const SUPABASE_PUBLIC_KEY = "PEGAR_CLAVE_PUBLICA";
+
+const SUPABASE_URL = "https://spauudjoiuyyepdoeybh.supabase.co";
+const SUPABASE_PUBLIC_KEY = "sb_publishable_iC0A7ougnKtYjs036m5J_A_v7SYdWlk";
 
 const configurado =
   SUPABASE_URL.startsWith("https://") &&
