@@ -3,112 +3,373 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0">
+
   <meta name="theme-color" content="#160d0a">
+
+  <meta name="description"
+        content="Brasa Wallet, monedero digital demostrativo del Festival del Fuego.">
 
   <title>Brasa Wallet | Festival del Fuego</title>
 
   <link rel="stylesheet" href="estilos.css">
 </head>
+
 <body>
 
   <main class="app">
 
+    <!-- ENCABEZADO -->
     <header class="encabezado">
+
       <div class="marca">
-        <span class="llama">🔥</span>
+        <span class="llama" aria-hidden="true">🔥</span>
+
         <div>
           <h1>BRASA WALLET</h1>
           <p>FESTIVAL DEL FUEGO</p>
         </div>
       </div>
+
       <span class="demo">MODO DEMO</span>
+
     </header>
 
-    <section id="pantalla-acceso" class="pantalla">
+
+    <!-- =====================================
+         REGISTRO E INICIO DE SESIÓN
+    ====================================== -->
+
+    <section id="pantalla-acceso"
+             class="pantalla">
+
       <div class="bienvenida">
-        <span class="icono">🔥</span>
+
+        <span class="icono" aria-hidden="true">🔥</span>
+
         <h2>Tu festival, en tus manos.</h2>
+
         <p>
           Regístrate, consulta tu saldo y disfruta
           de una experiencia sin efectivo.
         </p>
+
       </div>
 
       <form id="form-acceso">
+
         <h3 id="titulo-acceso">Iniciar sesión</h3>
 
         <div id="campo-nombre" hidden>
-          <label for="nombre">Nombre completo</label>
-          <input type="text" id="nombre"
-                 autocomplete="name">
+
+          <label for="nombre">
+            Nombre completo
+          </label>
+
+          <input
+            type="text"
+            id="nombre"
+            autocomplete="name"
+            maxlength="100"
+          >
+
         </div>
 
-        <label for="correo">Correo electrónico</label>
-        <input type="email" id="correo"
-               autocomplete="email" required>
+        <label for="correo">
+          Correo electrónico
+        </label>
 
-        <label for="contrasena">Contraseña</label>
-        <input type="password" id="contrasena"
-               autocomplete="current-password" required
-               minlength="8">
+        <input
+          type="email"
+          id="correo"
+          autocomplete="email"
+          required
+        >
 
-        <button type="submit" class="boton-principal"
-                id="boton-acceso">
+        <label for="contrasena">
+          Contraseña
+        </label>
+
+        <input
+          type="password"
+          id="contrasena"
+          autocomplete="current-password"
+          minlength="8"
+          required
+        >
+
+        <button
+          type="submit"
+          class="boton-principal"
+          id="boton-acceso"
+        >
           Iniciar sesión
         </button>
+
       </form>
 
-      <button type="button" class="enlace"
-              id="cambiar-modo">
+      <button
+        type="button"
+        class="enlace"
+        id="cambiar-modo"
+      >
         ¿No tienes cuenta? Regístrate
       </button>
+
     </section>
 
-    <section id="pantalla-wallet"
-             class="pantalla" hidden>
+
+    <!-- =====================================
+         MONEDERO PRINCIPAL
+    ====================================== -->
+
+    <section
+      id="pantalla-wallet"
+      class="pantalla"
+      hidden
+    >
 
       <div class="usuario">
+
         <div>
           <p>BIENVENIDO A BRASA WALLET</p>
           <h2 id="nombre-usuario">Visitante</h2>
         </div>
-        <button type="button" class="salir"
-                id="cerrar-sesion">
+
+        <button
+          type="button"
+          class="salir"
+          id="cerrar-sesion"
+        >
           Salir
         </button>
+
       </div>
+
+
+      <!-- TARJETA DE SALDO -->
 
       <div class="tarjeta-saldo">
+
         <p>SALDO DISPONIBLE</p>
+
         <h2 id="saldo">$0.00</h2>
+
         <span>MXN · Saldo ficticio</span>
+
       </div>
+
+
+      <!-- ACCIONES -->
 
       <div class="acciones">
-        <button type="button" id="btn-recargar">
+
+        <button
+          type="button"
+          id="btn-recargar"
+        >
           ＋ Recargar
         </button>
-        <button type="button" id="btn-pagar">
+
+        <button
+          type="button"
+          id="btn-pagar"
+        >
           ▦ Pagar
         </button>
-        <button type="button" id="btn-historial">
+
+        <button
+          type="button"
+          id="btn-historial"
+        >
           ◷ Historial
         </button>
+
       </div>
 
-      <div class="movimientos">
-        <h3>Últimos movimientos</h3>
-        <div id="lista-movimientos">
-          <p>Todavía no tienes movimientos.</p>
+
+      <!-- =================================
+           FORMULARIO DE RECARGAS DEMO
+      ================================== -->
+
+      <section
+        id="panel-recarga"
+        class="movimientos"
+        aria-labelledby="titulo-recarga"
+        hidden
+      >
+
+        <div class="recarga-cabecera">
+
+          <div>
+            <h3 id="titulo-recarga">
+              🔥 Recargar Brasa Wallet
+            </h3>
+
+            <p>
+              Agrega saldo ficticio a tu monedero.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            id="cerrar-recarga"
+            class="salir"
+            aria-label="Cerrar formulario de recarga"
+          >
+            ✕
+          </button>
+
         </div>
+
+
+        <form id="form-recarga">
+
+          <label for="monto-recarga">
+            Importe de recarga
+          </label>
+
+          <select
+            id="monto-recarga"
+            name="monto-recarga"
+            required
+          >
+
+            <option value="100">$100 MXN</option>
+            <option value="200">$200 MXN</option>
+            <option value="300">$300 MXN</option>
+            <option value="400">$400 MXN</option>
+            <option value="500" selected>$500 MXN</option>
+            <option value="600">$600 MXN</option>
+            <option value="700">$700 MXN</option>
+            <option value="800">$800 MXN</option>
+            <option value="900">$900 MXN</option>
+            <option value="1000">$1,000 MXN</option>
+            <option value="1100">$1,100 MXN</option>
+            <option value="1200">$1,200 MXN</option>
+            <option value="1300">$1,300 MXN</option>
+            <option value="1400">$1,400 MXN</option>
+            <option value="1500">$1,500 MXN</option>
+            <option value="1600">$1,600 MXN</option>
+            <option value="1700">$1,700 MXN</option>
+            <option value="1800">$1,800 MXN</option>
+            <option value="1900">$1,900 MXN</option>
+            <option value="2000">$2,000 MXN</option>
+            <option value="2100">$2,100 MXN</option>
+            <option value="2200">$2,200 MXN</option>
+            <option value="2300">$2,300 MXN</option>
+            <option value="2400">$2,400 MXN</option>
+            <option value="2500">$2,500 MXN</option>
+            <option value="2600">$2,600 MXN</option>
+            <option value="2700">$2,700 MXN</option>
+            <option value="2800">$2,800 MXN</option>
+            <option value="2900">$2,900 MXN</option>
+            <option value="3000">$3,000 MXN</option>
+            <option value="3100">$3,100 MXN</option>
+            <option value="3200">$3,200 MXN</option>
+            <option value="3300">$3,300 MXN</option>
+            <option value="3400">$3,400 MXN</option>
+            <option value="3500">$3,500 MXN</option>
+            <option value="3600">$3,600 MXN</option>
+            <option value="3700">$3,700 MXN</option>
+            <option value="3800">$3,800 MXN</option>
+            <option value="3900">$3,900 MXN</option>
+            <option value="4000">$4,000 MXN</option>
+            <option value="4100">$4,100 MXN</option>
+            <option value="4200">$4,200 MXN</option>
+            <option value="4300">$4,300 MXN</option>
+            <option value="4400">$4,400 MXN</option>
+            <option value="4500">$4,500 MXN</option>
+            <option value="4600">$4,600 MXN</option>
+            <option value="4700">$4,700 MXN</option>
+            <option value="4800">$4,800 MXN</option>
+            <option value="4900">$4,900 MXN</option>
+            <option value="5000">$5,000 MXN</option>
+
+          </select>
+
+
+          <!-- RESUMEN DEL COBRO -->
+
+          <div class="resumen-recarga">
+
+            <h3>Resumen de recarga</h3>
+
+            <div class="fila-recarga">
+              <span>Saldo que recibirás</span>
+              <strong id="resumen-monto">
+                $500.00
+              </strong>
+            </div>
+
+            <div class="fila-recarga">
+              <span>Comisión digital</span>
+              <strong id="resumen-comision">
+                $20.00
+              </strong>
+            </div>
+
+            <hr>
+
+            <div class="fila-recarga total">
+              <span>Total simulado</span>
+              <strong id="resumen-total">
+                $520.00
+              </strong>
+            </div>
+
+          </div>
+
+
+          <p class="aviso-demo">
+            Esta es una recarga demostrativa.
+            No se realizará ningún cobro bancario
+            ni se utilizará dinero real.
+          </p>
+
+
+          <button
+            type="submit"
+            id="confirmar-recarga"
+            class="boton-principal"
+          >
+            Confirmar recarga DEMO
+          </button>
+
+        </form>
+
+      </section>
+
+
+      <!-- HISTORIAL DE MOVIMIENTOS -->
+
+      <div class="movimientos">
+
+        <h3>Últimos movimientos</h3>
+
+        <div id="lista-movimientos">
+          <p>
+            Todavía no tienes movimientos.
+          </p>
+        </div>
+
       </div>
 
     </section>
 
-    <p id="mensaje" role="status"
-       aria-live="polite"></p>
+
+    <!-- MENSAJES -->
+
+    <p
+      id="mensaje"
+      role="status"
+      aria-live="polite"
+    ></p>
+
+
+    <!-- PIE DE PÁGINA -->
 
     <footer>
       FESTIVAL DEL FUEGO · EL SABOR DE LA BRASA
@@ -118,7 +379,14 @@
 
   </main>
 
+
+  <!-- SUPABASE -->
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- LÓGICA DE BRASA WALLET -->
+
   <script src="script.js"></script>
+
 </body>
 </html>
